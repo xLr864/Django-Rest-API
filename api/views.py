@@ -4,17 +4,25 @@ from rest_framework.response import Response
 from .models import Review
 from .serializers import ReviewSerializer
 from rest_framework import status
+from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated 
+from rest_framework.decorators import authentication_classes,permission_classes
 
 # Create your views here.
 @api_view(['GET','POST','PUT','PATCH','DELETE']) #All allowed methods
+@authentication_classes([BasicAuthentication])
+@permission_classes([IsAuthenticated])
 def Review_api(request,pk=None):
     #GET METHOD
     if request.method=='GET':
         id = pk
         if id is not None:
-            record = Review.objects.get(id=id)
-            serializer = ReviewSerializer(record)
-            return Response(serializer.data,status=status.HTTP_200_OK)
+            try:
+                record = Review.objects.get(id=id)
+                serializer = ReviewSerializer(record)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            except:
+                return Response({'msg':'Record Not found'},status=status.HTTP_404_NOT_FOUND)
 
         record = Review.objects.all()
         serializer = ReviewSerializer(record, many=True)
